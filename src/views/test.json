@@ -1,0 +1,92 @@
+{
+  "ROOT_QUERY.customers.0": {
+    "customer_name": "Facgure",
+    "customer_tax_id": "0105554074196",
+    "customer_address": "เลขท่ี503/21 อาคาร เค.เอส.แอล.ทาวเวอร์ชัน้ 12 ถนนศรีอยุธยา แขวงถนนพญาไท\nเขตราชเทวีกรุงเทพมหานคร 10400",
+    "employees": [
+      {
+        "type": "id",
+        "generated": true,
+        "id": "ROOT_QUERY.customers.0.employees.0"
+      },
+      {
+        "type": "id",
+        "generated": true,
+        "id": "ROOT_QUERY.customers.0.employees.1"
+      }
+    ]
+  },
+  "ROOT_QUERY.customers.0.employees.0": {
+    "id": "5f9008fb5b31250c7ee8b622",
+    "email": "luk.c@ooca.co"
+  },
+  "ROOT_QUERY.customers.0.employees.1": {
+    "id": "5f9008fb5b31250c7ee8b623",
+    "email": "tpkjn@ooca.co"
+  },
+  "ROOT_QUERY": {
+    "customers": [
+      {
+        "type": "id",
+        "generated": true,
+        "id": "ROOT_QUERY.customers.0"
+      }
+    ]
+  },
+  "$ROOT_MUTATION.createCustomer({\"input\":{\"data\":{\"customer_address\":\"3\",\"customer_name\":\"1\",\"customer_tax_id\":\"2\",\"employees\":[]}}}).customer": {
+    "customer_name": "1",
+    "customer_tax_id": "2",
+    "customer_address": "3",
+    "employees": []
+  },
+  "$ROOT_MUTATION.createCustomer({\"input\":{\"data\":{\"customer_address\":\"3\",\"customer_name\":\"1\",\"customer_tax_id\":\"2\",\"employees\":[]}}})": {
+    "customer": {
+      "type": "id",
+      "generated": true,
+      "id": "$ROOT_MUTATION.createCustomer({\"input\":{\"data\":{\"customer_address\":\"3\",\"customer_name\":\"1\",\"customer_tax_id\":\"2\",\"employees\":[]}}}).customer"
+    }
+  },
+  "ROOT_MUTATION": {
+    "createCustomer({\"input\":{\"data\":{\"customer_address\":\"3\",\"customer_name\":\"1\",\"customer_tax_id\":\"2\",\"employees\":[]}}})": {
+      "type": "id",
+      "generated": true,
+      "id": "$ROOT_MUTATION.createCustomer({\"input\":{\"data\":{\"customer_address\":\"3\",\"customer_name\":\"1\",\"customer_tax_id\":\"2\",\"employees\":[]}}})"
+    },
+    "createCustomer({\"input\":{\"data\":{\"customer_address\":\"6\",\"customer_name\":\"4\",\"customer_tax_id\":\"5\",\"employees\":[]}}})": {
+      "type": "id",
+      "generated": true,
+      "id": "$ROOT_MUTATION.createCustomer({\"input\":{\"data\":{\"customer_address\":\"6\",\"customer_name\":\"4\",\"customer_tax_id\":\"5\",\"employees\":[]}}})"
+    },
+    "createCustomer({\"input\":{\"data\":{\"customer_address\":\"4\",\"customer_name\":\"2\",\"customer_tax_id\":\"34\",\"employees\":[]}}})": {
+      "type": "id",
+      "generated": true,
+      "id": "$ROOT_MUTATION.createCustomer({\"input\":{\"data\":{\"customer_address\":\"4\",\"customer_name\":\"2\",\"customer_tax_id\":\"34\",\"employees\":[]}}})"
+    }
+  },
+  "$ROOT_MUTATION.createCustomer({\"input\":{\"data\":{\"customer_address\":\"6\",\"customer_name\":\"4\",\"customer_tax_id\":\"5\",\"employees\":[]}}}).customer": {
+    "customer_name": "4",
+    "customer_tax_id": "5",
+    "customer_address": "6",
+    "employees": []
+  },
+  "$ROOT_MUTATION.createCustomer({\"input\":{\"data\":{\"customer_address\":\"6\",\"customer_name\":\"4\",\"customer_tax_id\":\"5\",\"employees\":[]}}})": {
+    "customer": {
+      "type": "id",
+      "generated": true,
+      "id": "$ROOT_MUTATION.createCustomer({\"input\":{\"data\":{\"customer_address\":\"6\",\"customer_name\":\"4\",\"customer_tax_id\":\"5\",\"employees\":[]}}}).customer"
+    }
+  },
+  "$ROOT_MUTATION.createCustomer({\"input\":{\"data\":{\"customer_address\":\"4\",\"customer_name\":\"2\",\"customer_tax_id\":\"34\",\"employees\":[]}}}).customer": {
+    "customer_name": "2",
+    "customer_tax_id": "34",
+    "customer_address": "4",
+    "employees": []
+  },
+  "$ROOT_MUTATION.createCustomer({\"input\":{\"data\":{\"customer_address\":\"4\",\"customer_name\":\"2\",\"customer_tax_id\":\"34\",\"employees\":[]}}})": {
+    "customer": {
+      "type": "id",
+      "generated": true,
+      "id": "$ROOT_MUTATION.createCustomer({\"input\":{\"data\":{\"customer_address\":\"4\",\"customer_name\":\"2\",\"customer_tax_id\":\"34\",\"employees\":[]}}}).customer"
+    }
+  }
+}
