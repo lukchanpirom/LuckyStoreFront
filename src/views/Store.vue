@@ -402,7 +402,7 @@ export default {
       //   Object.assign(this.desserts[this.editedIndex], this.editedItem);
       // } 
       if (!this.editState) {
-        const upcustomer = {
+        const updateAbout = {
           customer_name: this.editedItem.customer_name,
           customer_tax_id: this.editedItem.customer_tax_id.trim(),
           customer_address: this.editedItem.customer_address,
@@ -411,7 +411,7 @@ export default {
           mutation: UPDATE_CUSTOMER,
           variables: {
             id: this.customers[this.customerIndex].id,
-            about: upcustomer,
+            about: updateAbout,
           },
           update: (cache, { data: { updateCustomer: { customer } } }) => {
             try {
@@ -434,14 +434,14 @@ export default {
         let arr = this.customers;
         console.log(this.editedItem);
         arr[this.customerIndex].employees.splice(indexemail, 1, this.editedItem);
-        const upcustomer = {
+        const editEmail = {
           employees: arr[this.customerIndex].employees
         };
         this.$apollo.mutate({
           mutation: UPDATE_CUSTOMER,
           variables: {
             id: this.customers[this.customerIndex].id,
-            about: upcustomer,
+            about: editEmail,
           },
           update: (cache, { data: { updateCustomer: { customer } } }) => {
             try {
@@ -459,7 +459,7 @@ export default {
           }
         })
       } else if (!this.addORcreate) {
-        const customer = {
+        const NewCustomer = {
           customer_name: this.editedItem.customer_name,
           customer_tax_id: this.editedItem.customer_tax_id.trim(),
           customer_address: this.editedItem.customer_address,
@@ -468,7 +468,7 @@ export default {
         this.$apollo.mutate({
           mutation: CREATE_NEW_CUSTOMERS,
           variables: {
-            newcustomer: customer,
+            newcustomer: NewCustomer,
           },
           update: (
             cache,
@@ -483,6 +483,44 @@ export default {
                 query: GET_MY_CUSTOMERS,
               });
               data.customers.splice(0, 0, customer);
+              cache.writeQuery({
+                query: GET_MY_CUSTOMERS,
+                data,
+              });
+            } catch (error) {
+              console.log(error);
+            }
+          },
+        });
+      } else if(this.addORcreate) {
+        let arr = this.desserts.map(obj => {
+          return { email: obj.email } ;
+        });
+        arr.unshift({email: this.editedItem.email})
+        const updateCustomerEmail = {
+          employees: arr
+        };
+        this.$apollo.mutate({
+          mutation: UPDATE_CUSTOMER,
+          variables: {
+            id: this.customers[this.customerIndex].id,
+            about: updateCustomerEmail,
+          },
+          update: (
+            cache,
+            {
+              data: {
+                updateCustomer: { customer },
+              },
+            }
+          ) => {
+            try {
+              const data = cache.readQuery({
+                query: GET_MY_CUSTOMERS,
+              });
+              console.log(data);
+              console.log(customer);
+              data.customers[this.customerIndex].employees.splice(0, 0, customer.employees[0]);
               cache.writeQuery({
                 query: GET_MY_CUSTOMERS,
                 data,
