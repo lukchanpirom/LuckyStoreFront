@@ -3,18 +3,15 @@
     <v-row>
       <v-col cols="12" sm="6" md="2">
         <v-row>
-          <v-card height="350" width="256" class="mx-auto">
+          <v-card height="50" width="256" tile class="mx-auto rounded-0">
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title class="title"> Customer </v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+          </v-card>
+          <v-card elevation="1" height="350" width="256" class="mx-auto">
             <v-navigation-drawer permanent>
-              <v-list-item>
-                <v-list-item-content>
-                  <v-list-item-title class="title">
-                    Customer
-                  </v-list-item-title>
-                </v-list-item-content>
-              </v-list-item>
-
-              <v-divider></v-divider>
-
               <v-list nav class="ma-0 pa-0">
                 <v-list-item
                   v-for="item in customers"
@@ -31,7 +28,9 @@
                       item.customer_name
                     }}</v-list-item-title>
                   </v-list-item-content>
-                  <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
+                  <v-icon small @click="deleteCustomer(item)">
+                    mdi-delete
+                  </v-icon>
                 </v-list-item>
               </v-list>
             </v-navigation-drawer>
@@ -50,15 +49,15 @@
             <v-card-text>
               <p>
                 <strong>Customer name: </strong
-                >{{ customers[customerIndex].customer_name }}
+                >{{ customers[customerIndex] == undefined ?  '' : customers[customerIndex].customer_name }}
               </p>
               <p>
                 <strong>Customer TAX ID: </strong
-                >{{ customers[customerIndex].customer_tax_id }}
+                >{{ customers[customerIndex] == undefined ?  '' : customers[customerIndex].customer_tax_id }}
               </p>
               <p>
                 <strong>Customer Address: </strong
-                >{{ customers[customerIndex].customer_address }}
+                >{{ customers[customerIndex] == undefined ?  '' : customers[customerIndex].customer_address }}
               </p>
               <p>
                 {{ text }}
@@ -79,7 +78,7 @@
           <template v-slot:top>
             <v-toolbar flat>
               <v-toolbar-title>{{
-                customers[customerIndex].customer_name
+                customers[customerIndex] == undefined ? '' : customers[customerIndex].customer_name
               }}</v-toolbar-title>
               <v-divider class="mx-4" inset vertical></v-divider>
               <v-text-field
@@ -257,22 +256,15 @@ const UPDATE_CUSTOMER = gql`
   }
 `;
 
-// const DELETE_CUSTOMER = gql`
-// mutation($id: ID!) {
-//   deleteCustomer(input: { where: { id: $id }}) {
-//     customer {
-//       id
-//       customer_name
-//       customer_tax_id
-//       customer_address
-//       employees {
-//         id
-//         email
-//       }
-//     }
-//   }
-// }
-// `;
+const DELETE_CUSTOMER = gql`
+  mutation($id: ID!) {
+    deleteCustomer(input: { where: { id: $id } }) {
+      customer {
+        id
+      }
+    }
+  }
+`;
 
 export default {
   apollo: {
@@ -284,16 +276,10 @@ export default {
     return {
       customers: [
         {
-          id: "",
           customer_name: "",
           customer_tax_id: "",
           customer_address: "",
-          employees: [
-            {
-              id: "",
-              email: "",
-            },
-          ],
+          employees: []
         },
       ],
       dialog: false,
@@ -305,7 +291,7 @@ export default {
           sortable: false,
           value: "id",
         },
-        { text: "Email", value: "email" },
+        { text: "Email", value: "email", align: "start" },
         { text: "Actions", value: "actions", sortable: false },
       ],
       desserts: [],
@@ -327,6 +313,9 @@ export default {
       search: "",
       text: null,
       editState: true,
+      targetID: "",
+      deleteCusOREmail: null,
+      actionState: "",
     };
   },
   computed: {
@@ -349,7 +338,7 @@ export default {
       val || this.closeDelete();
     },
     customers(val) {
-      this.desserts = val[this.customerIndex].employees;
+      if (val[this.customerIndex != undefined]) this.desserts = val[this.customerIndex].employees;
     },
   },
 
@@ -364,18 +353,82 @@ export default {
         this.editedIndex = this.desserts.indexOf(item);
       }
       this.editedItem = Object.assign({}, item);
-      console.log(this.editedItem);
       this.dialog = true;
     },
 
     deleteItem(item) {
+      this.deleteCusOREmail = false;
       this.editedIndex = this.desserts.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialogDelete = true;
     },
 
+    deleteCustomer(item) {
+      this.targetID = item.id;
+      this.deleteCusOREmail = true;
+      this.dialogDelete = true;
+    },
+
     deleteItemConfirm() {
-      this.desserts.splice(this.editedIndex, 1);
+      if (this.deleteCusOREmail) {
+        this.$apollo.mutate({
+          mutation: DELETE_CUSTOMER,
+          variables: {
+            id: this.targetID,
+          },
+          update: (
+            cache,
+            {
+              data: {
+                deleteCustomer: { customer },
+              },
+            }
+          ) => {
+            const data = cache.readQuery({
+              query: GET_MY_CUSTOMERS,
+            });
+            const index = data.customers.findIndex((c) => c.id === customer.id);
+            data.customers.splice(index, 1);
+            cache.writeQuery({
+              query: GET_MY_CUSTOMERS,
+              data,
+            });
+          },
+        });
+        if (this.customerIndex > 0) this.customerIndex -= 1;
+      } else {
+        const newitem = this.desserts.map((i) => {
+          return {
+            email: i.email,
+            id: i.id,
+          };
+        });
+        const index = this.editedIndex;
+        newitem.splice(this.editedIndex, 1);
+        this.$apollo.mutate({
+          mutation: UPDATE_CUSTOMER,
+          variables: {
+            id: this.customers[this.customerIndex].id,
+            about: {
+              employees: newitem,
+            },
+          },
+          update: (cache) => {
+            try {
+              const data = cache.readQuery({
+                query: GET_MY_CUSTOMERS,
+              });
+              data.customers[this.customerIndex].employees.splice(index, 1);
+              cache.writeQuery({
+                query: GET_MY_CUSTOMERS,
+                data,
+              });
+            } catch (error) {
+              console.log(error);
+            }
+          },
+        });
+      }
       this.closeDelete();
     },
 
@@ -386,6 +439,7 @@ export default {
         this.editedIndex = -1;
         this.addORcreate = true;
         this.editState = true;
+        (this.targetID = ""), (this.deleteCusOREmail = null);
       });
     },
 
@@ -394,13 +448,16 @@ export default {
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem);
         this.editedIndex = -1;
+        this.addORcreate = true;
+        this.editState = true;
+        (this.targetID = ""), (this.deleteCusOREmail = null);
       });
     },
 
     save() {
       // if (this.editedIndex > -1) {
       //   Object.assign(this.desserts[this.editedIndex], this.editedItem);
-      // } 
+      // }
       if (!this.editState) {
         const updateAbout = {
           customer_name: this.editedItem.customer_name,
@@ -413,29 +470,44 @@ export default {
             id: this.customers[this.customerIndex].id,
             about: updateAbout,
           },
-          update: (cache, { data: { updateCustomer: { customer } } }) => {
+          update: (
+            cache,
+            {
+              data: {
+                updateCustomer: { customer },
+              },
+            }
+          ) => {
             try {
               const data = cache.readQuery({
                 query: GET_MY_CUSTOMERS,
               });
-              const index = data.customers.findIndex(c => c.id === this.customers[this.customerIndex].id);
+              const index = data.customers.findIndex(
+                (c) => c.id === this.customers[this.customerIndex].id
+              );
               data.customers.splice(index, 1, customer);
               cache.writeQuery({
                 query: GET_MY_CUSTOMERS,
-                data
-              })
+                data,
+              });
             } catch (error) {
               console.log(error);
             }
-          }
-        })
-      } else if(this.editState && this.editedIndex > -1) {
-        const indexemail = this.customers[this.customerIndex].employees.findIndex(e => e.id === this.editedItem.id);
+          },
+        });
+      } else if (this.editState && this.editedIndex > -1) {
+        const indexemail = this.customers[
+          this.customerIndex
+        ].employees.findIndex((e) => e.id === this.editedItem.id);
         let arr = this.customers;
         console.log(this.editedItem);
-        arr[this.customerIndex].employees.splice(indexemail, 1, this.editedItem);
+        arr[this.customerIndex].employees.splice(
+          indexemail,
+          1,
+          this.editedItem
+        );
         const editEmail = {
-          employees: arr[this.customerIndex].employees
+          employees: arr[this.customerIndex].employees,
         };
         this.$apollo.mutate({
           mutation: UPDATE_CUSTOMER,
@@ -443,21 +515,32 @@ export default {
             id: this.customers[this.customerIndex].id,
             about: editEmail,
           },
-          update: (cache, { data: { updateCustomer: { customer } } }) => {
+          update: (
+            cache,
+            {
+              data: {
+                updateCustomer: { customer },
+              },
+            }
+          ) => {
             try {
               const data = cache.readQuery({
                 query: GET_MY_CUSTOMERS,
               });
-              data.customers[this.customerIndex].employees.splice(indexemail, 1, customer.employees[indexemail]);
+              data.customers[this.customerIndex].employees.splice(
+                indexemail,
+                1,
+                customer.employees[indexemail]
+              );
               cache.writeQuery({
                 query: GET_MY_CUSTOMERS,
-                data
-              })
+                data,
+              });
             } catch (error) {
               console.log(error);
             }
-          }
-        })
+          },
+        });
       } else if (!this.addORcreate) {
         const NewCustomer = {
           customer_name: this.editedItem.customer_name,
@@ -492,13 +575,13 @@ export default {
             }
           },
         });
-      } else if(this.addORcreate) {
-        let arr = this.desserts.map(obj => {
-          return { email: obj.email } ;
+      } else if (this.addORcreate) {
+        let arr = this.desserts.map((obj) => {
+          return { email: obj.email };
         });
-        arr.unshift({email: this.editedItem.email})
+        arr.unshift({ email: this.editedItem.email });
         const updateCustomerEmail = {
-          employees: arr
+          employees: arr,
         };
         this.$apollo.mutate({
           mutation: UPDATE_CUSTOMER,
@@ -518,9 +601,11 @@ export default {
               const data = cache.readQuery({
                 query: GET_MY_CUSTOMERS,
               });
-              console.log(data);
-              console.log(customer);
-              data.customers[this.customerIndex].employees.splice(0, 0, customer.employees[0]);
+              data.customers[this.customerIndex].employees.splice(
+                0,
+                0,
+                customer.employees[0]
+              );
               cache.writeQuery({
                 query: GET_MY_CUSTOMERS,
                 data,
@@ -535,8 +620,10 @@ export default {
       }
       this.close();
     },
-    changeState() {
-      this.addORcreate = !this.addORcreate;
+    changeState(e) {
+      console.log(e.target.textContent);
+      if (event.target.textContent === "New Customer") this.addORcreate = false;
+      if (event.target.textContent === "Add Email") this.addORcreate = true;
     },
     setDesserts(val) {
       this.customerIndex = this.customers.indexOf(val);
