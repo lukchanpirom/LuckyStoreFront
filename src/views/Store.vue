@@ -274,14 +274,7 @@ export default {
   },
   data() {
     return {
-      customers: [
-        {
-          customer_name: "",
-          customer_tax_id: "",
-          customer_address: "",
-          employees: []
-        },
-      ],
+      customers: [],
       dialog: false,
       dialogDelete: false,
       headers: [
@@ -309,7 +302,7 @@ export default {
         email: "",
       },
       addORcreate: true,
-      customerIndex: 0,
+      customerIndex: -1,
       search: "",
       text: null,
       editState: true,
@@ -338,7 +331,9 @@ export default {
       val || this.closeDelete();
     },
     customers(val) {
-      if (val[this.customerIndex != undefined]) this.desserts = val[this.customerIndex].employees;
+      if (val[this.customerIndex != undefined]) {
+        this.desserts = val[this.customerIndex].employees;
+      }
     },
   },
 
@@ -396,6 +391,8 @@ export default {
           },
         });
         if (this.customerIndex > 0) this.customerIndex -= 1;
+        this.desserts = [];
+        this.customerIndex = -1;
       } else {
         const newitem = this.desserts.map((i) => {
           return {
@@ -527,6 +524,7 @@ export default {
               const data = cache.readQuery({
                 query: GET_MY_CUSTOMERS,
               });
+              console.log(this.customerIndex);
               data.customers[this.customerIndex].employees.splice(
                 indexemail,
                 1,
@@ -565,7 +563,7 @@ export default {
               const data = cache.readQuery({
                 query: GET_MY_CUSTOMERS,
               });
-              data.customers.splice(0, 0, customer);
+              data.customers.push(customer);
               cache.writeQuery({
                 query: GET_MY_CUSTOMERS,
                 data,
@@ -575,6 +573,8 @@ export default {
             }
           },
         });
+        this.customerIndex = -1;
+        this.desserts = [];
       } else if (this.addORcreate) {
         let arr = this.desserts.map((obj) => {
           return { email: obj.email };
@@ -620,8 +620,7 @@ export default {
       }
       this.close();
     },
-    changeState(e) {
-      console.log(e.target.textContent);
+    changeState() {
       if (event.target.textContent === "New Customer") this.addORcreate = false;
       if (event.target.textContent === "Add Email") this.addORcreate = true;
     },
