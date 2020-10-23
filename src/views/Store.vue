@@ -304,10 +304,8 @@ export default {
       addORcreate: true,
       customerIndex: -1,
       search: "",
-      text: null,
       editState: true,
       targetID: "",
-      deleteCusOREmail: null,
       actionState: "",
     };
   },
@@ -335,6 +333,10 @@ export default {
         this.desserts = val[this.customerIndex].employees;
       }
     },
+    addORcreate(val) {
+      if(val === true) this.actionState = "adduser";
+      if(val === false) this.actionState = "createcustomer"
+    }
   },
 
   mounted() {},
@@ -343,8 +345,10 @@ export default {
     editItem(item, position) {
       if (!position) {
         this.editState = false;
+        this.actionState = "editabout"
       } else {
         this.editState = true;
+        this.actionState = "edituser"
         this.editedIndex = this.desserts.indexOf(item);
       }
       this.editedItem = Object.assign({}, item);
@@ -352,7 +356,7 @@ export default {
     },
 
     deleteItem(item) {
-      this.deleteCusOREmail = false;
+      this.actionState = "deleteuser"
       this.editedIndex = this.desserts.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialogDelete = true;
@@ -360,12 +364,12 @@ export default {
 
     deleteCustomer(item) {
       this.targetID = item.id;
-      this.deleteCusOREmail = true;
+      this.actionState = "deletecustomer"
       this.dialogDelete = true;
     },
 
     deleteItemConfirm() {
-      if (this.deleteCusOREmail) {
+      if (this.actionState === "deletecustomer") {
         this.$apollo.mutate({
           mutation: DELETE_CUSTOMER,
           variables: {
@@ -393,7 +397,7 @@ export default {
         if (this.customerIndex > 0) this.customerIndex -= 1;
         this.desserts = [];
         this.customerIndex = -1;
-      } else {
+      } else if(this.actionState === "deleteuser") {
         const newitem = this.desserts.map((i) => {
           return {
             email: i.email,
@@ -436,7 +440,8 @@ export default {
         this.editedIndex = -1;
         this.addORcreate = true;
         this.editState = true;
-        (this.targetID = ""), (this.deleteCusOREmail = null);
+        this.actionState = "";
+        (this.targetID = "");
       });
     },
 
@@ -447,7 +452,8 @@ export default {
         this.editedIndex = -1;
         this.addORcreate = true;
         this.editState = true;
-        (this.targetID = ""), (this.deleteCusOREmail = null);
+        this.actionState = "";
+        (this.targetID = "");
       });
     },
 
@@ -455,7 +461,7 @@ export default {
       // if (this.editedIndex > -1) {
       //   Object.assign(this.desserts[this.editedIndex], this.editedItem);
       // }
-      if (!this.editState) {
+      if (this.actionState === "editabout") {
         const updateAbout = {
           customer_name: this.editedItem.customer_name,
           customer_tax_id: this.editedItem.customer_tax_id.trim(),
@@ -492,7 +498,7 @@ export default {
             }
           },
         });
-      } else if (this.editState && this.editedIndex > -1) {
+      } else if (this.actionState === "edituser") {
         const indexemail = this.customers[
           this.customerIndex
         ].employees.findIndex((e) => e.id === this.editedItem.id);
@@ -539,7 +545,7 @@ export default {
             }
           },
         });
-      } else if (!this.addORcreate) {
+      } else if (this.actionState === "createcustomer") {
         const NewCustomer = {
           customer_name: this.editedItem.customer_name,
           customer_tax_id: this.editedItem.customer_tax_id.trim(),
@@ -575,7 +581,7 @@ export default {
         });
         this.customerIndex = -1;
         this.desserts = [];
-      } else if (this.addORcreate) {
+      } else if (this.actionState === "adduser") {
         let arr = this.desserts.map((obj) => {
           return { email: obj.email };
         });
