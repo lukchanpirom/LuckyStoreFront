@@ -49,18 +49,27 @@
             <v-card-text>
               <p>
                 <strong>Customer name: </strong
-                >{{ customers[customerIndex] == undefined ?  '' : customers[customerIndex].customer_name }}
+                >{{
+                  customers[customerIndex] == undefined
+                    ? ""
+                    : customers[customerIndex].customer_name
+                }}
               </p>
               <p>
                 <strong>Customer TAX ID: </strong
-                >{{ customers[customerIndex] == undefined ?  '' : customers[customerIndex].customer_tax_id }}
+                >{{
+                  customers[customerIndex] == undefined
+                    ? ""
+                    : customers[customerIndex].customer_tax_id
+                }}
               </p>
               <p>
                 <strong>Customer Address: </strong
-                >{{ customers[customerIndex] == undefined ?  '' : customers[customerIndex].customer_address }}
-              </p>
-              <p>
-                {{ text }}
+                >{{
+                  customers[customerIndex] == undefined
+                    ? ""
+                    : customers[customerIndex].customer_address
+                }}
               </p>
             </v-card-text>
           </v-card>
@@ -78,7 +87,9 @@
           <template v-slot:top>
             <v-toolbar flat>
               <v-toolbar-title>{{
-                customers[customerIndex] == undefined ? '' : customers[customerIndex].customer_name
+                customers[customerIndex] == undefined
+                  ? ""
+                  : customers[customerIndex].customer_name
               }}</v-toolbar-title>
               <v-divider class="mx-4" inset vertical></v-divider>
               <v-text-field
@@ -99,6 +110,7 @@
                     class="mb-2"
                     v-bind="attrs"
                     v-on="on"
+                    @click="setAction"
                   >
                     Create
                   </v-btn>
@@ -334,9 +346,9 @@ export default {
       }
     },
     addORcreate(val) {
-      if(val === true) this.actionState = "adduser";
-      if(val === false) this.actionState = "createcustomer"
-    }
+      if (val === true) this.actionState = "adduser";
+      if (val === false) this.actionState = "createcustomer";
+    },
   },
 
   mounted() {},
@@ -345,10 +357,10 @@ export default {
     editItem(item, position) {
       if (!position) {
         this.editState = false;
-        this.actionState = "editabout"
+        this.actionState = "editabout";
       } else {
         this.editState = true;
-        this.actionState = "edituser"
+        this.actionState = "edituser";
         this.editedIndex = this.desserts.indexOf(item);
       }
       this.editedItem = Object.assign({}, item);
@@ -356,7 +368,7 @@ export default {
     },
 
     deleteItem(item) {
-      this.actionState = "deleteuser"
+      this.actionState = "deleteuser";
       this.editedIndex = this.desserts.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialogDelete = true;
@@ -364,7 +376,7 @@ export default {
 
     deleteCustomer(item) {
       this.targetID = item.id;
-      this.actionState = "deletecustomer"
+      this.actionState = "deletecustomer";
       this.dialogDelete = true;
     },
 
@@ -397,7 +409,7 @@ export default {
         if (this.customerIndex > 0) this.customerIndex -= 1;
         this.desserts = [];
         this.customerIndex = -1;
-      } else if(this.actionState === "deleteuser") {
+      } else if (this.actionState === "deleteuser") {
         const newitem = this.desserts.map((i) => {
           return {
             email: i.email,
@@ -441,7 +453,7 @@ export default {
         this.addORcreate = true;
         this.editState = true;
         this.actionState = "";
-        (this.targetID = "");
+        this.targetID = "";
       });
     },
 
@@ -453,15 +465,17 @@ export default {
         this.addORcreate = true;
         this.editState = true;
         this.actionState = "";
-        (this.targetID = "");
+        this.targetID = "";
       });
     },
 
     save() {
-      // if (this.editedIndex > -1) {
-      //   Object.assign(this.desserts[this.editedIndex], this.editedItem);
-      // }
+      if (this.customerIndex < 0) {
+        console.log("null");
+        this.close();
+      }
       if (this.actionState === "editabout") {
+        console.log("editabout");
         const updateAbout = {
           customer_name: this.editedItem.customer_name,
           customer_tax_id: this.editedItem.customer_tax_id.trim(),
@@ -499,11 +513,11 @@ export default {
           },
         });
       } else if (this.actionState === "edituser") {
+        console.log("edituser");
         const indexemail = this.customers[
           this.customerIndex
         ].employees.findIndex((e) => e.id === this.editedItem.id);
         let arr = this.customers;
-        console.log(this.editedItem);
         arr[this.customerIndex].employees.splice(
           indexemail,
           1,
@@ -512,6 +526,7 @@ export default {
         const editEmail = {
           employees: arr[this.customerIndex].employees,
         };
+        console.log(editEmail);
         this.$apollo.mutate({
           mutation: UPDATE_CUSTOMER,
           variables: {
@@ -530,22 +545,25 @@ export default {
               const data = cache.readQuery({
                 query: GET_MY_CUSTOMERS,
               });
-              console.log(this.customerIndex);
               data.customers[this.customerIndex].employees.splice(
                 indexemail,
                 1,
                 customer.employees[indexemail]
               );
+              console.log(data.customers[this.customerIndex].employees);
+              console.log(customer.employees);
               cache.writeQuery({
                 query: GET_MY_CUSTOMERS,
                 data,
               });
+              console.log(data.customers[this.customerIndex].employees);
             } catch (error) {
               console.log(error);
             }
           },
         });
       } else if (this.actionState === "createcustomer") {
+        console.log("createcustomer");
         const NewCustomer = {
           customer_name: this.editedItem.customer_name,
           customer_tax_id: this.editedItem.customer_tax_id.trim(),
@@ -582,13 +600,15 @@ export default {
         this.customerIndex = -1;
         this.desserts = [];
       } else if (this.actionState === "adduser") {
+        console.log("adduser");
         let arr = this.desserts.map((obj) => {
-          return { email: obj.email };
+          return { email: obj.email, id: obj.id };
         });
         arr.unshift({ email: this.editedItem.email });
         const updateCustomerEmail = {
           employees: arr,
         };
+        console.log(updateCustomerEmail);
         this.$apollo.mutate({
           mutation: UPDATE_CUSTOMER,
           variables: {
@@ -607,6 +627,8 @@ export default {
               const data = cache.readQuery({
                 query: GET_MY_CUSTOMERS,
               });
+              console.log(data.customers[this.customerIndex].employees);
+              console.log(customer.employees);
               data.customers[this.customerIndex].employees.splice(
                 0,
                 0,
@@ -621,8 +643,6 @@ export default {
             }
           },
         });
-      } else {
-        this.desserts.unshift(this.editedItem);
       }
       this.close();
     },
@@ -633,6 +653,9 @@ export default {
     setDesserts(val) {
       this.customerIndex = this.customers.indexOf(val);
       this.desserts = this.customers[this.customerIndex].employees;
+    },
+    setAction() {
+      this.actionState = "adduser";
     },
   },
 };

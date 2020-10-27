@@ -39,6 +39,7 @@ const apolloProvider = new VueApollo({
   defaultClient: client
 })
 
+
 new Vue({
   router,
   apolloProvider,
